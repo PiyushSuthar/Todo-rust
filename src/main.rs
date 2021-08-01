@@ -1,30 +1,55 @@
 use yew::prelude::*;
 
 enum Msg {
-    AddOne,
+    Update(String),
+    AddTodo,
+    DeleteTodo(usize),
 }
 
-struct Model {
+struct Todo {
+    id: usize,
+    completed: bool,
+    text: String,
+}
+struct App {
     // `ComponentLink` is like a reference to a component.
     // It can be used to send messages to the component
     link: ComponentLink<Self>,
-    value: i64,
+    value: String,
+    todos: Vec<Todo>,
 }
 
-impl Component for Model {
+impl Component for App {
     type Message = Msg;
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, value: 0 }
+        Self {
+            link,
+            value: String::new(),
+            todos: Vec::new(),
+        }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::AddOne => {
-                self.value += 1;
+            Msg::Update(val) => {
+                self.value = val;
                 // the value has changed so we need to
                 // re-render for it to appear on the page
+                true
+            }
+            Msg::AddTodo => {
+                self.todos.push(Todo {
+                    completed: false,
+                    text: self.value.to_string(),
+                    id: self.todos.len() + 1,
+                });
+                self.value = String::new();
+                true
+            }
+            Msg::DeleteTodo(id) => {
+                self.todos.remove(id);
                 true
             }
         }
@@ -40,13 +65,60 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <div>
-                <button onclick=self.link.callback(|_| Msg::AddOne)>{ "+1" }</button>
-                <p>{ self.value }</p>
+                // <button onclick=self.link.callback(|_| Msg::AddOne)>{ "+1" }</button>
+                // <p>{ self.value }</p>
+                <div>
+                    <h1>{"Rustodo"}</h1>
+                        <input
+                            type="text"
+                            placeholder="Galvanize rust."
+                            value=self.value.to_string()
+                            oninput=self.link.callback(|e: InputData|{
+                                Msg::Update(e.value)
+                            })
+                            onkeypress=self.link.batch_callback(|e: KeyboardEvent|{
+                                if e.key() == "Enter" {
+                                    Some(Msg::AddTodo)
+                                } else {None}
+                            })
+                        />
+                        <button onclick=self.link.callback(|_| Msg::AddTodo)>{"Add Todo"}</button>
+                </div>
+                // <h2>{"Todos:"}</h2>
+                <div>
+                     <table>
+                     <thead>
+                        <tr>
+                            <th width="20"><input type="checkbox" /></th>
+                            <th>{"Todo"}</th>
+                            <th>{"Option"}</th>
+                        </tr>
+                     </thead>
+                        <tbody>
+                            {
+                                for self.todos.iter().map(|todo| self.view_todo((todo.id, todo.text.as_str())))
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         }
     }
 }
 
+impl App {
+    fn view_todo(&self, (id, todo): (usize, &str)) -> Html {
+        html! {
+            <tr>
+                <td><input type="checkbox" /></td>
+                <td>{todo}</td>
+                <td>
+                    <button onclick=self.link.callback(move |_| Msg::DeleteTodo(id))>{"Delete"}</button>
+                </td>
+            </tr>
+        }
+    }
+}
 fn main() {
-    yew::start_app::<Model>();
+    yew::start_app::<App>();
 }
