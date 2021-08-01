@@ -47,7 +47,7 @@ impl Component for App {
                 true
             }
             Msg::DeleteTodo(id) => {
-                self.todos.remove(id - 1);
+                self.todos.remove(id);
                 true
             }
         }
