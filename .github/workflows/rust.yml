@@ -26,7 +26,6 @@ jobs:
     
     - name: Install Wasm
       run: |
-        cargo install wasm-bindgen-cli
         rustup target add wasm32-unknown-unknown
 
     - name: Build
