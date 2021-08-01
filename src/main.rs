@@ -7,7 +7,6 @@ enum Msg {
 }
 
 struct Todo {
-    id: usize,
     completed: bool,
     text: String,
 }
@@ -43,7 +42,6 @@ impl Component for App {
                 self.todos.push(Todo {
                     completed: false,
                     text: self.value.to_string(),
-                    id: self.todos.len() + 1,
                 });
                 self.value = String::new();
                 true
@@ -96,7 +94,7 @@ impl Component for App {
                      </thead>
                         <tbody>
                             {
-                                for self.todos.iter().map(|todo| self.view_todo((todo.id, todo.text.as_str())))
+                                for self.todos.iter().enumerate().map(|todo| self.view_todo(todo))
                             }
                         </tbody>
                     </table>
@@ -107,11 +105,11 @@ impl Component for App {
 }
 
 impl App {
-    fn view_todo(&self, (id, todo): (usize, &str)) -> Html {
+    fn view_todo(&self, (id, todo): (usize, &Todo)) -> Html {
         html! {
             <tr>
                 <td><input type="checkbox" /></td>
-                <td>{todo}</td>
+                <td>{todo.text.as_str()}</td>
                 <td>
                     <button onclick=self.link.callback(move |_| Msg::DeleteTodo(id))>{"Delete"}</button>
                 </td>
