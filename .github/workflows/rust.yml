@@ -16,14 +16,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Install Trunk and Wasm
+    - uses: jetli/trunk-action@v0.1.0
+      with:
+        version: 'latest'
+        
+    - name: Install Wasm
       run: |
-        cargo install trunk wasm-bindgen-cli
+        cargo install wasm-bindgen-cli
         rustup target add wasm32-unknown-unknown
-    
+
     - name: Build
-      run: cargo build --verbose
+      run: trunk build --release
       
     - name: Upload production-ready build files
       uses: actions/upload-artifact@v2
@@ -48,4 +51,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
+        publish_dir: ./dist
